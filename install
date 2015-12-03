@@ -1,0 +1,4 @@
+#! /bin/bash
+
+docker build -t queue ./queue
+docker build -t worker ./worker

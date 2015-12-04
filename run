@@ -1,5 +1,4 @@
 #! /bin/bash
 
 docker run -t -d -p 8000:8000 -v $(pwd)/queue/:/usr/src --name queue_container queue php -S 0.0.0.0:8000
-docker run -t -i -p 4000:4000 -v $(pwd)/worker/:/usr/src --name worker1 --link queue_container:queue worker php start.php
 

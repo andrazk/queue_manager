@@ -10,9 +10,14 @@ echo $queueUrl . PHP_EOL;
 // worker resolve instance host
 $id = gethostname();
 $ip = gethostbyname($id);
-$port = 4000;
+$port = getenv('WORKER_PORT');
+$type = getenv('WORKER_TYPE');
 
 // start listening
 $client = new JsonRpc\Client($queueUrl);
-$client->call('listen', [$ip, $port]);
+$success = $client->call('listen', [$ip, $port, $type]);
+
+echo $success . PHP_EOL;
+var_dump($client->response);
+var_dump($client->error);
 

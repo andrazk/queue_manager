@@ -23,24 +23,23 @@ class Manager
      * Listen to new workers and add them to queue
      * @param  string $host
      * @param  string $port
+     * @param  string $type
      * @return int
      * @author Andraz <andraz.krascek@gmail.com>
      */
-    public function listen($host, $port)
+    public function listen($host, $port, $type)
     {
-        $workers = $this->storage->getWorkers();
-        // find existing worker
-        foreach ($workers as $worker) {
-            if ($host === $worker->getHost()) {
-                return $worker->getId();
-            }
+        if ($worker = $this->storage->getWorkerByHost($host)) {
+            return $worker->getId();
         }
+
         // save new worker
         $worker = new Worker();
         $worker->setHost($host);
         $worker->setPort($port);
+        $worker->setType($type);
 
-        $this->storage->save($worker);
+        $worker = $this->storage->saveWorker($worker);
 
         return $worker->getId();
     }

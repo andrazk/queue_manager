@@ -1,22 +1,9 @@
 <?php
 
-require __DIR__ . '/vendor/autoload.php';
+require __DIR__ . '/src/autoload.php';
 
-class DummyResponder
-{
-    /**
-     * Listen to worker
-     * @param  string  $host
-     * @param  integer $port
-     * @return string
-     * @author Andraz <andraz@easistent.com>
-     */
-    public function listen($host, $port = 4000)
-    {
-        return "Welcome $host on port $port";
-    }
-}
+$storage = new \Queue\FileStorage();
+$manager = new \Queue\Manager($storage);
 
-$methods = new DummyResponder();
-$server = new JsonRpc\Server($methods);
+$server = new JsonRpc\Server($manager);
 $server->receive();

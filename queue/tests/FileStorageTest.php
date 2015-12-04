@@ -14,6 +14,7 @@ class FileStorageTest extends \PHPUnit_Framework_TestCase
         parent::setUp();
 
         $this->storage = new FileStorage();
+        $this->storage->setFile($this->fileInTest);
     }
 
     /**
@@ -22,22 +23,12 @@ class FileStorageTest extends \PHPUnit_Framework_TestCase
      */
     public function testOpen()
     {
-        $this->storage->open($this->fileInTest);
+        $data = ['key' => new \stdClass()];
+        file_put_contents($this->fileInTest, serialize($data));
 
-        $this->assertTrue(file_exists($this->fileInTest));
-    }
+        $actual = $this->storage->open($this->fileInTest);
 
-    /**
-     * Test setter and getter for worker file
-     * @author Andraz <andraz.krascek@gmail.com>
-     */
-    public function testSetGetWorkerFile()
-    {
-        $file = './workerfile';
-
-        $this->storage->setWorkersFile($file);
-
-        $this->assertEquals($file, $this->storage->getWorkersFile());
+        $this->assertEquals($data, $actual);
     }
 
     /**
@@ -47,11 +38,11 @@ class FileStorageTest extends \PHPUnit_Framework_TestCase
      */
     public function testGetWorkers()
     {
-        $worker = serialize(new Worker());
+        $data = ['workers' => [new Worker()]];
 
-        $storage = \Mockery::mock('Queue\FileStorage[getFile,getWorkersFile]');
-        $storage->shouldReceive('getWorkersFile')->once()->andReturn($this->fileInTest);
-        $storage->shouldReceive('getFile')->with($this->fileInTest)->once()->andReturn([$worker]);
+        $storage = \Mockery::mock('Queue\FileStorage[getFile,open]');
+        $storage->shouldReceive('getFile')->once()->andReturn($this->fileInTest);
+        $storage->shouldReceive('open')->with($this->fileInTest)->once()->andReturn($data);
 
         $workers = $storage->getWorkers();
 
@@ -63,15 +54,67 @@ class FileStorageTest extends \PHPUnit_Framework_TestCase
      * @return void
      * @author Andraz <andraz.krascek@gmail.com>
      */
-    public function testGetFile()
+    public function testSetGetFile()
     {
-        file_put_contents($this->fileInTest, "a\nb");
-
+        $this->storage->setFile($this->fileInTest);
         $actual = $this->storage->getFile($this->fileInTest);
 
-        $this->assertCount(2, $actual);
+        $this->assertEquals($this->fileInTest, $actual);
     }
 
+    /**
+     * Save new worker without id
+     * @return void
+     * @author Andraz <andraz.krascek@gmail.com>
+     */
+    public function testSaveNewWorker()
+    {
+        $worker = new Worker();
+        $actual = $this->storage->saveWorker($worker);
+
+        $this->assertEquals(0, $actual->getId());
+    }
+
+    /**
+     * Save two works one after another
+     * @return void
+     * @author Andraz <andraz.krascek@gmail.com>
+     */
+    public function testSaveTwoWorkers()
+    {
+        $first = $this->storage->saveWorker(new Worker());
+        $second = $this->storage->saveWorker(new Worker());
+
+        $this->assertEquals(0, $first->getId());
+        $this->assertEquals(1, $second->getId());
+    }
+
+    /**
+     * Test if worker is updated
+     * @return void
+     * @author Andraz <andraz.krascek@gmail.com>
+     */
+    public function testUpdateWorker()
+    {
+        $worker = new Worker();
+        $worker->setHost('127.0.0.1');
+        $worker = $this->storage->saveWorker($worker);
+
+        $workerUpdated = new Worker();
+        $workerUpdated->setId($worker->getId());
+        $workerUpdated->setHost('198.21.0.221');
+        $this->storage->saveWorker($workerUpdated);
+
+        $actual = $this->storage->getWorkers()[0];
+
+        $this->assertEquals('198.21.0.221', $actual->getHost());
+    }
+
+    /**
+     * Do some destruction after each test
+     * @return void
+     * @author Andraz <andraz.krascek@gmail.com>
+     */
     public function tearDown()
     {
         parent::tearDown();

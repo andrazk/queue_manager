@@ -4,31 +4,40 @@ namespace Queue;
 
 class FileStorage implements StorageInterface
 {
-    protected $workersFile = 'workers';
+    protected $file = 'storage_file';
+
+    /**
+     * File Getter
+     * @return string
+     * @author Andraz <andraz.krascek@gmail.com>
+     */
+    public function getFile()
+    {
+        return $this->file;
+    }
+
+    /**
+     * File Setter
+     * @param  string $file
+     * @author Andraz <andraz.krascek@gmail.com>
+     */
+    public function setFile($file)
+    {
+        $this->file = $file;
+    }
 
     /**
      * Open file resource
-     * @return Resource
+     * @return array
      * @author Andraz <andraz.krascek@gmail.com>
      */
     public function open($file)
     {
         if (!file_exists($file)) {
-            return fopen($file, 'w');
+            return [];
         }
 
-        return fopen($file, 'r+');
-    }
-
-    /**
-     * Close file resource
-     * @param  Resource $resource
-     * @return void
-     * @author Andraz <andraz.krascek@gmail.com>
-     */
-    public function close($resource)
-    {
-        fclose($resource);
+        return unserialize(file_get_contents($file));
     }
 
     /**
@@ -38,58 +47,77 @@ class FileStorage implements StorageInterface
      */
     public function getWorkers()
     {
-        $workers = [];
-        $workers_unserialized = $this->getFile($this->getWorkersFile());
+        $data = $this->open($this->getFile());
 
-        foreach ($workers_unserialized as $worker) {
-            $workers[] = unserialize($worker);
-        }
-
-        return $workers;
+        return $this->getKeyFromData($data, 'workers');
     }
 
     /**
-     * Open file, save lines to array and close
-     * @param  string $file
-     * @return array
+     * Find worker by host attribute
+     * @param  string $host
+     * @return Worker|null
      * @author Andraz <andraz.krascek@gmail.com>
      */
-    public function getFile($file)
-    {
-        return file($file);
-    }
-
     public function getWorkerByHost($host)
     {
+        $workers = $this->getWorkers();
 
+        foreach ($workers as $worker) {
+            if ($host === $worker->getHost()) {
+                return $worker;
+            }
+        }
     }
 
+    /**
+     * Get key from data
+     * @param  array $data
+     * @param  string $key
+     * @return mixed
+     * @author Andraz <andraz.krascek@gmail.com>
+     */
+    public function getKeyFromData($data, $key)
+    {
+        if (!key_exists($key, $data)) {
+            return [];
+        }
+
+        return $data[$key];
+    }
+
+    /**
+     * Save worker to file
+     * @param  Worker $worker
+     * @return Worker
+     * @author Andraz <andraz.krascek@gmail.com>
+     */
     public function saveWorker(Worker $worker)
     {
+        $data = $this->open($this->getFile());
+        $workers = $this->getKeyFromData($data, 'workers');
 
+        if (is_null($worker->getId())) {
+            $worker->setId(count($workers));
+        }
+
+        $workers[$worker->getId()] = $worker;
+
+        $data['workers'] = $workers;
+
+        $this->write($this->getFile(), $data);
+
+        return $worker;
     }
 
     /**
-     * Workers File Getter
-     * @return string
+     * Write to file
+     * @param  string $file
+     * @param  array $data
+     * @return int|false
      * @author Andraz <andraz.krascek@gmail.com>
      */
-    public function getWorkersFile()
+    public function write($file, $data)
     {
-        return $this->workersFile;
-    }
-
-    /**
-     * Workers File Setter
-     * @param  string $filename
-     * @author Andraz <andraz.krascek@gmail.com>
-     */
-    public function setWorkersFile($filename)
-    {
-        // if (!file_exists($filename)) {
-        //     throw new Exception("File $filename doesn't exists!", 1);
-        // }
-
-        $this->workersFile = $filename;
+        return file_put_contents($file, serialize($data));
     }
 }

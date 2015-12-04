@@ -7,6 +7,7 @@ class Worker
     protected $id = null;
     protected $host = null;
     protected $port = null;
+    protected $type = null;
 
     /**
      * Get Id Value
@@ -39,6 +40,16 @@ class Worker
     }
 
     /**
+     * Type Getter
+     * @return string
+     * @author Andraz <andraz.krascek@gmail.com>
+     */
+    public function getType()
+    {
+        return $this->type;
+    }
+
+    /**
      * Set Id Value
      * @return int
      * @author Andraz <andraz.krascek@gmail.com>
@@ -66,5 +77,15 @@ class Worker
     public function setPort($port)
     {
         $this->port = $port;
+    }
+
+    /**
+     * Type Setter
+     * @param  string $type
+     * @author Andraz <andraz.krascek@gmail.com>
+     */
+    public function setType($type)
+    {
+        $this->type = $type;
     }
 }

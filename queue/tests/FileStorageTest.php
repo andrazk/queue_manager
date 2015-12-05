@@ -50,6 +50,33 @@ class FileStorageTest extends \PHPUnit_Framework_TestCase
         $this->assertInstanceOf('Queue\Worker', $workers[0]);
     }
 
+    public function testGetWorkerByHost()
+    {
+        $host = '127.0.0.1';
+
+        $worker = \Mockery::mock('Queue\Worker');
+        $worker->shouldReceive('getHost')->once()->andReturn($host);
+
+        $storage = \Mockery::mock('Queue\FileStorage[getWorkers]');
+        $storage->shouldReceive('getWorkers')->once()->andReturn([$worker]);
+
+        $this->assertEquals($worker, $storage->getWorkerByHost($host));
+    }
+
+    public function testGetWorkerByHostNotFound()
+    {
+        $host = '127.0.0.1';
+        $hostPublic = '198.1.45.32';
+
+        $worker = \Mockery::mock('Queue\Worker');
+        $worker->shouldReceive('getHost')->once()->andReturn($host);
+
+        $storage = \Mockery::mock('Queue\FileStorage[getWorkers]');
+        $storage->shouldReceive('getWorkers')->once()->andReturn([$worker]);
+
+        $this->assertNull($storage->getWorkerByHost($hostPublic));
+    }
+
     /**
      * Test if function return array from file
      * @return void

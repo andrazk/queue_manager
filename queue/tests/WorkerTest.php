@@ -42,4 +42,19 @@ class WorkerTest extends \PHPUnit_Framework_TestCase
 
         $this->assertEquals($port, $worker->getPort());
     }
+
+    /**
+     * Test type setter and getter
+     * @return void
+     * @author Andraz <andraz@easistent.com>
+     */
+    public function testSetGetType()
+    {
+        $type = 'fibonacci';
+
+        $worker = new Worker();
+        $worker->setType($type);
+
+        $this->assertEquals($type, $worker->getType());
+    }
 }

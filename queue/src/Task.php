@@ -98,4 +98,14 @@ class Task
     {
         return $this->status;
     }
+
+    /**
+     * Check if task is waiting
+     * @return boolean
+     * @author Andraz <andraz.krascek@gmail.com>
+     */
+    public function isWaiting()
+    {
+        return $this->getStatus() === 'waiting';
+    }
 }

@@ -46,7 +46,7 @@ class WorkerTest extends \PHPUnit_Framework_TestCase
     /**
      * Test type setter and getter
      * @return void
-     * @author Andraz <andraz@easistent.com>
+     * @author Andraz <andraz.krascek@gmail.com>
      */
     public function testSetGetType()
     {
@@ -56,5 +56,31 @@ class WorkerTest extends \PHPUnit_Framework_TestCase
         $worker->setType($type);
 
         $this->assertEquals($type, $worker->getType());
+    }
+
+    /**
+     * Test if worker is free after set
+     * @return void
+     * @author Andraz <andraz.krascek@gmail.com>
+     */
+    public function testSetIsFree()
+    {
+        $worker = new Worker();
+        $worker->setStatus('free');
+
+        $this->assertTrue($worker->isFree());
+    }
+
+    /**
+     * Test if worker is busy after set
+     * @return void
+     * @author Andraz <andraz.krascek@gmail.com>
+     */
+    public function testSetIsBusy()
+    {
+        $worker = new Worker();
+        $worker->setStatus('busy');
+
+        $this->assertTrue($worker->isBusy());
     }
 }

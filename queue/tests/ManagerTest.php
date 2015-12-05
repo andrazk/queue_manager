@@ -74,4 +74,105 @@ class ManagerTest extends \PHPUnit_Framework_TestCase
 
         $this->assertEquals(1, $manager->enqueueTask('fibonacci', 5));
     }
+
+    /**
+     * Test if there are any Waiting task and free workers
+     * @return void
+     * @author Andraz <andraz.krascek@gmail.com>
+     */
+    public function testGetWaitingTaskAndFreeWorker()
+    {
+        $worker = \Mockery::mock('Queue\Worker');
+        $worker->shouldReceive('getType')->once()->andReturn('fibonacci');
+        $worker->shouldReceive('isBusy')->once()->andReturn(false);
+
+        $task = \Mockery::mock('Queue\Task');
+        $task->shouldReceive('isWaiting')->once()->andReturn(true);
+        $task->shouldReceive('getType')->once()->andReturn('fibonacci');
+
+        $storage = \Mockery::mock('Queue\FileStorage');
+        $storage->shouldReceive('getTasks')->once()->andReturn([$task]);
+        $storage->shouldReceive('getWorkers')->once()->andReturn([$worker]);
+
+        $manager = new Manager($storage, $task);
+
+        list($actualTask, $actualWorker) = $manager->getWaitingTaskAndFreeWorker();
+
+        $this->assertEquals($task, $actualTask);
+        $this->assertEquals($worker, $actualWorker);
+    }
+
+    /**
+     * Test what happens if no waiting task
+     * @return void
+     * @author Andraz <andraz.krascek@gmail.com>
+     */
+    public function testGetNoWaitingTask()
+    {
+        $task = \Mockery::mock('Queue\Task');
+        $task->shouldReceive('isWaiting')->once()->andReturn(false);
+
+        $storage = \Mockery::mock('Queue\FileStorage');
+        $storage->shouldReceive('getTasks')->once()->andReturn([$task]);
+
+        $manager = new Manager($storage, $task);
+
+        list($actualTask, $actualWorker) = $manager->getWaitingTaskAndFreeWorker();
+
+        $this->assertNull($actualTask);
+        $this->assertNull($actualWorker);
+    }
+
+    /**
+     * Test what happens if no worker is same type
+     * @return void
+     * @author Andraz <andraz.krascek@gmail.com>
+     */
+    public function testGetWaitingTaskAndNoFreeWorkerOfSameType()
+    {
+        $worker = \Mockery::mock('Queue\Worker');
+        $worker->shouldReceive('getType')->once()->andReturn('crypte');
+
+        $task = \Mockery::mock('Queue\Task');
+        $task->shouldReceive('isWaiting')->once()->andReturn(true);
+        $task->shouldReceive('getType')->once()->andReturn('fibonacci');
+
+        $storage = \Mockery::mock('Queue\FileStorage');
+        $storage->shouldReceive('getTasks')->once()->andReturn([$task]);
+        $storage->shouldReceive('getWorkers')->once()->andReturn([$worker]);
+
+        $manager = new Manager($storage, $task);
+
+        list($actualTask, $actualWorker) = $manager->getWaitingTaskAndFreeWorker();
+
+        $this->assertNull($actualTask);
+        $this->assertNull($actualWorker);
+    }
+
+    /**
+     * Test what happens if no worker is free
+     * @return void
+     * @author Andraz <andraz.krascek@gmail.com>
+     */
+    public function testGetWaitingTaskAndNoFreeWorker()
+    {
+        $worker = \Mockery::mock('Queue\Worker');
+        $worker->shouldReceive('getType')->once()->andReturn('fibonacci');
+        $worker->shouldReceive('isBusy')->once()->andReturn(true);
+
+        $task = \Mockery::mock('Queue\Task');
+        $task->shouldReceive('isWaiting')->once()->andReturn(true);
+        $task->shouldReceive('getType')->once()->andReturn('fibonacci');
+
+        $storage = \Mockery::mock('Queue\FileStorage');
+        $storage->shouldReceive('getTasks')->once()->andReturn([$task]);
+        $storage->shouldReceive('getWorkers')->once()->andReturn([$worker]);
+
+        $manager = new Manager($storage, $task);
+
+        list($actualTask, $actualWorker) = $manager->getWaitingTaskAndFreeWorker();
+
+        $this->assertNull($actualTask);
+        $this->assertNull($actualWorker);
+    }
 }

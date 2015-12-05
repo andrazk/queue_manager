@@ -8,6 +8,7 @@ class Worker
     protected $host = null;
     protected $port = null;
     protected $type = null;
+    protected $status = 'free'; // busy|free
 
     /**
      * Get Id Value
@@ -87,5 +88,35 @@ class Worker
     public function setType($type)
     {
         $this->type = $type;
+    }
+
+    /**
+     * Status Setter
+     * @param  string $status
+     * @author Andraz <andraz.krascek@gmail.com>
+     */
+    public function setStatus($status)
+    {
+        $this->status = $status;
+    }
+
+    /**
+     * Check if worker is free
+     * @return boolean
+     * @author Andraz <andraz.krascek@gmail.com>
+     */
+    public function isFree()
+    {
+        return $this->status === 'free';
+    }
+
+    /**
+     * Check if worker is busy
+     * @return boolean
+     * @author Andraz <andraz.krascek@gmail.com>
+     */
+    public function isBusy()
+    {
+        return $this->status === 'busy';
     }
 }

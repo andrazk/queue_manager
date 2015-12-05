@@ -68,4 +68,37 @@ class Manager
         return 1;
     }
 
+    /**
+     * Find in storage waiting task and free worker of same type
+     * @return array|null
+     * @author Andraz <andraz.krascek@gmail.com>
+     */
+    public function getWaitingTaskAndFreeWorker()
+    {
+        $tasks = $this->storage->getTasks();
+
+        foreach ($tasks as $task) {
+            if (!$task->isWaiting()) {
+                continue;
+            }
+
+            $workers = $this->storage->getWorkers();
+
+            foreach ($workers as $worker) {
+
+                if ($task->getType() !== $worker->getType()) {
+                    continue;
+                }
+
+                if ($worker->isBusy()) {
+                    continue;
+                }
+
+                return [$task, $worker];
+            }
+        }
+
+        return [null, null];
+    }
+
 }

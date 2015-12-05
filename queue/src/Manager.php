@@ -10,13 +10,19 @@ class Manager
     protected $storage;
 
     /**
+     * @var Task
+     */
+    protected $task;
+
+    /**
      * Class Construct
      * @param  StorageInterface $storage
      * @author Andraz <andraz.krascek@gmail.com>
      */
-    public function __construct(StorageInterface $storage)
+    public function __construct(StorageInterface $storage, Task $task)
     {
         $this->storage = $storage;
+        $this->task = $task;
     }
 
     /**
@@ -43,4 +49,23 @@ class Manager
 
         return $worker->getId();
     }
+
+    /**
+     * Add new task to queue
+     * @param  string $name
+     * @param  mixed $parameters
+     * @return int
+     * @author Andraz <andraz.krascek@gmail.com>
+     */
+    public function enqueueTask($name, $parameters)
+    {
+        $task = $this->task->newInstance();
+        $task->setName($name);
+        $task->setParameters($parameters);
+
+        $this->storage->saveTask($task);
+
+        return 1;
+    }
+
 }

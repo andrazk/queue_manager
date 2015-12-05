@@ -86,7 +86,7 @@ class Manager
 
             foreach ($workers as $worker) {
 
-                if ($task->getType() !== $worker->getType()) {
+                if ($task->getName() !== $worker->getType()) {
                     continue;
                 }
 
@@ -99,6 +99,42 @@ class Manager
         }
 
         return [null, null];
+    }
+
+    /**
+     * Send task over RPC to worker
+     * Mark task as in progress nad worker as busy
+     * @param  Task   $task
+     * @param  Worker $worker
+     * @return void
+     * @author Andraz <andraz.krascek@gmail.com>
+     */
+    public function sendTaskToWorker(Task $task, Worker $worker)
+    {
+        $client = $this->newRpcClient($worker->getHost(), $worker->getport());
+        $success = $client->notify($task->getName(), [$task->getParameters()]);
+
+        if ($success) {
+            $task->setStatus('in_progress');
+            $this->storage->saveTask($task);
+
+            $worker->setStatus('busy');
+            $this->storage->saveWorker($worker);
+        }
+
+        return $success;
+    }
+
+    /**
+     * Create new RPC Client
+     * @param  string $host
+     * @param  int $port
+     * @return JsonRpc\Client
+     * @author Andraz <andraz@easistent.com>
+     */
+    public function newRpcClient($host, $port)
+    {
+        return new JsonRpc\Client("http://$host:$port/listen.php");
     }
 
 }

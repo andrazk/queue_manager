@@ -88,7 +88,7 @@ class ManagerTest extends \PHPUnit_Framework_TestCase
 
         $task = \Mockery::mock('Queue\Task');
         $task->shouldReceive('isWaiting')->once()->andReturn(true);
-        $task->shouldReceive('getType')->once()->andReturn('fibonacci');
+        $task->shouldReceive('getName')->once()->andReturn('fibonacci');
 
         $storage = \Mockery::mock('Queue\FileStorage');
         $storage->shouldReceive('getTasks')->once()->andReturn([$task]);
@@ -135,7 +135,7 @@ class ManagerTest extends \PHPUnit_Framework_TestCase
 
         $task = \Mockery::mock('Queue\Task');
         $task->shouldReceive('isWaiting')->once()->andReturn(true);
-        $task->shouldReceive('getType')->once()->andReturn('fibonacci');
+        $task->shouldReceive('getName')->once()->andReturn('fibonacci');
 
         $storage = \Mockery::mock('Queue\FileStorage');
         $storage->shouldReceive('getTasks')->once()->andReturn([$task]);
@@ -162,7 +162,7 @@ class ManagerTest extends \PHPUnit_Framework_TestCase
 
         $task = \Mockery::mock('Queue\Task');
         $task->shouldReceive('isWaiting')->once()->andReturn(true);
-        $task->shouldReceive('getType')->once()->andReturn('fibonacci');
+        $task->shouldReceive('getName')->once()->andReturn('fibonacci');
 
         $storage = \Mockery::mock('Queue\FileStorage');
         $storage->shouldReceive('getTasks')->once()->andReturn([$task]);
@@ -174,5 +174,71 @@ class ManagerTest extends \PHPUnit_Framework_TestCase
 
         $this->assertNull($actualTask);
         $this->assertNull($actualWorker);
+    }
+
+    /**
+     * Test if task is sent to worker
+     * @return void
+     * @author Andraz <andraz@easistent.com>
+     */
+    public function testSendTaskToWorker()
+    {
+        $host = '127.0.0.1';
+        $port = 4000;
+
+        $task = \Mockery::mock('Queue\Task');
+        $task->shouldReceive('getName')->once()->andReturn('fibonacci');
+        $task->shouldReceive('getParameters')->once()->andReturn(5);
+        $task->shouldReceive('setStatus')->with('in_progress')->once();
+
+        $worker = \Mockery::mock('Queue\Worker');
+        $worker->shouldReceive('getHost')->once()->andReturn($host);
+        $worker->shouldReceive('getPort')->once()->andReturn($port);
+        $worker->shouldReceive('setStatus')->once()->with('busy');
+
+        $client = \Mockery::mock('JsonRpc\Client');
+        $client->shouldReceive('notify')->once()->andReturn(true);
+
+        $storage = \Mockery::mock('Queue\FileStorage');
+        $storage->shouldReceive('saveTask')->with($task)->once();
+        $storage->shouldReceive('saveWorker')->with($worker)->once();
+
+        $manager = \Mockery::mock('Queue\Manager[newRpcClient]', [$storage, new Task()]);
+        $manager->shouldReceive('newRpcClient')->with($host, $port)->once()->andReturn($client);
+
+        $this->assertTrue($manager->sendTaskToWorker($task, $worker));
+    }
+
+    /**
+     * Test when sending fails
+     * @return void
+     * @author Andraz <andraz@easistent.com>
+     */
+    public function testSendTaskToWorkerFailed()
+    {
+        $host = '127.0.0.1';
+        $port = 4000;
+
+        $task = \Mockery::mock('Queue\Task');
+        $task->shouldReceive('getName')->once()->andReturn('fibonacci');
+        $task->shouldReceive('getParameters')->once()->andReturn(5);
+        $task->shouldReceive('setStatus')->with('in_progress')->once();
+
+        $worker = \Mockery::mock('Queue\Worker');
+        $worker->shouldReceive('getHost')->once()->andReturn($host);
+        $worker->shouldReceive('getPort')->once()->andReturn($port);
+        $worker->shouldReceive('setStatus')->once()->with('busy');
+
+        $client = \Mockery::mock('JsonRpc\Client');
+        $client->shouldReceive('notify')->once()->andReturn(false);
+
+        $storage = \Mockery::mock('Queue\FileStorage');
+        $storage->shouldReceive('saveTask')->never();
+        $storage->shouldReceive('saveWorker')->never();
+
+        $manager = \Mockery::mock('Queue\Manager[newRpcClient]', [$storage, new Task()]);
+        $manager->shouldReceive('newRpcClient')->with($host, $port)->once()->andReturn($client);
+
+        $this->assertFalse($manager->sendTaskToWorker($task, $worker));
     }
 }

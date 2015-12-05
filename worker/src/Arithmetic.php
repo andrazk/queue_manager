@@ -16,7 +16,7 @@ class Arithmetic
      * Using shunting-yard algorithm
      * @param  string $input
      * @return int
-     * @author Andraz <andraz@easistent.com>
+     * @author Andraz <andraz.krascek@gmail.com>
      */
     public function run($input)
     {

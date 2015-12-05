@@ -9,7 +9,7 @@ class FibonacciTest extends \PHPUnit_Framework_TestCase
     /**
      * Test fibonacci sequence
      * @return void
-     * @author Andraz <andraz@easistent.com>
+     * @author Andraz <andraz.krascek@gmail.com>
      */
     public function testRun()
     {

@@ -1,7 +1,7 @@
 {
     "require": {
         "jsonrpc/jsonrpc": "~1.0",
-         "mockery/mockery": "^0.9.4"
+        "mockery/mockery": "^0.9.4"
     },
     "autoload": {
         "psr-4": {

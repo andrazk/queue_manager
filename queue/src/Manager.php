@@ -130,7 +130,7 @@ class Manager
      * @param  string $host
      * @param  int $port
      * @return JsonRpc\Client
-     * @author Andraz <andraz@easistent.com>
+     * @author Andraz <andraz.krascek@gmail.com>
      */
     public function newRpcClient($host, $port)
     {

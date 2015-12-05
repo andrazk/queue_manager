@@ -10,7 +10,7 @@ class Fibonacci
      * Return Fibonacci sequence
      * @param  int $num
      * @return array
-     * @author Andraz <andraz@easistent.com>
+     * @author Andraz <andraz.krascek@gmail.com>
      */
     public function run($num)
     {
@@ -27,7 +27,7 @@ class Fibonacci
      * Get fibonacci number for given index
      * @param  int $num
      * @return int
-     * @author Andraz <andraz@easistent.com>
+     * @author Andraz <andraz.krascek@gmail.com>
      */
     protected function fib($num)
     {

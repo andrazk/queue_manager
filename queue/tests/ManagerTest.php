@@ -179,7 +179,7 @@ class ManagerTest extends \PHPUnit_Framework_TestCase
     /**
      * Test if task is sent to worker
      * @return void
-     * @author Andraz <andraz@easistent.com>
+     * @author Andraz <andraz.krascek@gmail.com>
      */
     public function testSendTaskToWorker()
     {
@@ -212,7 +212,7 @@ class ManagerTest extends \PHPUnit_Framework_TestCase
     /**
      * Test when sending fails
      * @return void
-     * @author Andraz <andraz@easistent.com>
+     * @author Andraz <andraz.krascek@gmail.com>
      */
     public function testSendTaskToWorkerFailed()
     {

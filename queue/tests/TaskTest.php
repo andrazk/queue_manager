@@ -47,4 +47,33 @@ class TaskTest extends \PHPUnit_Framework_TestCase
 
         $this->assertSame($parameters, $task->getParameters());
     }
+
+    /**
+     * Test id setter and getter
+     * @return void
+     * @author Andraz <andraz.krascek@gmail.com>
+     */
+    public function testSetGetId()
+    {
+        $id = 1229;
+        $task = new Task();
+        $task->setId($id);
+
+        $this->assertSame($id, $task->getId());
+    }
+
+    /**
+     * Test status setter and getter
+     * @return void
+     * @author Andraz <andraz.krascek@gmail.com>
+     */
+    public function testSetGetStatus()
+    {
+        $status = 'done';
+
+        $task = new Task();
+        $task->setStatus($status);
+
+        $this->assertSame($status, $task->getStatus());
+    }
 }

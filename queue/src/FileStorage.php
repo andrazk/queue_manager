@@ -120,4 +120,44 @@ class FileStorage implements StorageInterface
     {
         return file_put_contents($file, serialize($data));
     }
+
+    /**
+     * Get tasks from file
+     * @return array
+     * @author Andraz <andraz.krascek@gmail.com>
+     */
+    public function getTasks()
+    {
+        $data = $this->open($this->getFile());
+        return $this->getKeyFromData($data, 'tasks');
+    }
+
+    /**
+     * Insert or update task in file
+     * @param  Task $task
+     * @return Task
+     * @author Andraz <andraz.krascek@gmail.com>
+     */
+    public function saveTask(Task $task)
+    {
+        $data = $this->open($this->getFile());
+        $tasks = $this->getKeyFromData($data, 'tasks');
+
+        if (is_null($task->getId())) {
+            $id = 0;
+            if (!empty($tasks)) {
+                $id = max(array_keys($tasks)) + 1;
+            }
+
+            $task->setId($id);
+        }
+
+        $tasks[$task->getId()] = $task;
+
+        $data['tasks'] = $tasks;
+
+        $this->write($this->getFile(), $data);
+
+        return $task;
+    }
 }

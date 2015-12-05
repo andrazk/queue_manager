@@ -4,6 +4,7 @@ namespace Queue\Tests;
 
 use Queue\FileStorage;
 use Queue\Worker;
+use Queue\Task;
 
 class FileStorageTest extends \PHPUnit_Framework_TestCase
 {
@@ -108,6 +109,54 @@ class FileStorageTest extends \PHPUnit_Framework_TestCase
         $actual = $this->storage->getWorkers()[0];
 
         $this->assertEquals('198.21.0.221', $actual->getHost());
+    }
+
+    /**
+     * Tsest if task is saved
+     * @return void
+     * @author Andraz <andraz.krascek@gmail.com>
+     */
+    public function testSaveNewTask()
+    {
+        $task = new Task();
+        $actual = $this->storage->saveTask($task);
+
+        $this->assertEquals(0, $actual->getId());
+    }
+
+    /**
+     * Test if id is incremented
+     * @return void
+     * @author Andraz <andraz.krascek@gmail.com>
+     */
+    public function testSaveTwoTasks()
+    {
+        $first = $this->storage->saveTask(new Task());
+        $second = $this->storage->saveTask(new Task());
+
+        $this->assertEquals(0, $first->getId());
+        $this->assertEquals(1, $second->getId());
+    }
+
+    /**
+     * Test if task is updated
+     * @return void
+     * @author Andraz <andraz.krascek@gmail.com>
+     */
+    public function testUpdateTask()
+    {
+        $task = new Task();
+        $task->setStatus('in_progress');
+        $task = $this->storage->saveTask($task);
+
+        $taskUpdated = new Task();
+        $taskUpdated->setId($task->getId());
+        $taskUpdated->setStatus('done');
+        $this->storage->saveTask($taskUpdated);
+
+        $actual = $this->storage->getTasks()[0];
+
+        $this->assertEquals('done', $actual->getStatus());
     }
 
     /**

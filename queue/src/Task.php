@@ -4,6 +4,7 @@ namespace Queue;
 
 class Task
 {
+    protected $id = null;
     protected $name = '';
     protected $parameters;
     protected $status = 'waiting';
@@ -16,6 +17,26 @@ class Task
     public function newInstance()
     {
         return new static();
+    }
+
+    /**
+     * ID Getter
+     * @return int
+     * @author Andraz <andraz.krascek@gmail.com>
+     */
+    public function getId()
+    {
+        return $this->id;
+    }
+
+    /**
+     * Id Setter
+     * @param  int $id
+     * @author Andraz <andraz.krascek@gmail.com>
+     */
+    public function setId($id)
+    {
+        $this->id = $id;
     }
 
     /**
@@ -56,5 +77,25 @@ class Task
     public function getParameters()
     {
         return $this->parameters;
+    }
+
+    /**
+     * Status Setter
+     * @param  string $status
+     * @author Andraz <andraz.krascek@gmail.com>
+     */
+    public function setStatus($status)
+    {
+        $this->status = $status;
+    }
+
+    /**
+     * Status Getter
+     * @return string
+     * @author Andraz <andraz.krascek@gmail.com>
+     */
+    public function getStatus()
+    {
+        return $this->status;
     }
 }

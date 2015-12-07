@@ -18,6 +18,6 @@ class MirrorTest extends \PHPUnit_Framework_TestCase
 
         $worker = new Mirror();
 
-        $this->assertEquals($expected, $worker->run($input));
+        $this->assertEquals($expected, $worker->run(1, 2, $input));
     }
 }

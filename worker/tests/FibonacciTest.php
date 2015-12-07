@@ -15,8 +15,8 @@ class FibonacciTest extends \PHPUnit_Framework_TestCase
     {
         $worker = new Fibonacci();
 
-        $this->assertEquals([], $worker->run(0));
-        $this->assertEquals([0], $worker->run(1));
-        $this->assertEquals([0, 1, 1, 2, 3, 5], $worker->run(6));
+        $this->assertEquals('', $worker->run(1, 2, 0));
+        $this->assertEquals('0', $worker->run(1, 2, 1));
+        $this->assertEquals('0, 1, 1, 2, 3, 5', $worker->run(1, 2, 6));
     }
 }

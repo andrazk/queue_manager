@@ -17,6 +17,6 @@ class EncoderTest extends \PHPUnit_Framework_TestCase
 
         $worker = new Encoder();
 
-        $this->assertTrue(password_verify($pass, $worker->run($pass)));
+        $this->assertTrue(password_verify($pass, $worker->run(1, 2, $pass)));
     }
 }

@@ -11,11 +11,8 @@ class ArithmeticTest extends \PHPUnit_Framework_TestCase
         $input = '3 + 4 * 2 / ( 1 - 5 ) ^ 2 ^ 3';
         $res = 3.0001220703125;
 
-        $parser = \Mockery::mock('RR\Shunt\Parser');
-        $parser->shouldReceive('parse')->once()->with($input)->andReturn($res);
+        $worker = new Arithmetic();
 
-        $worker = new Arithmetic($parser);
-
-        $this->assertEquals($res, $worker->run($input));
+        $this->assertEquals($res, $worker->run(1, 2, $input));
     }
 }

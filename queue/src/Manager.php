@@ -51,6 +51,27 @@ class Manager
     }
 
     /**
+     * Receive end result
+     * Remove task from queue
+     * Free Worker
+     * @param  string  $workerId
+     * @param  string  $taskId
+     * @param  mixed   $result
+     * @return function
+     * @author Andraz <andraz.krascek@gmail.com>
+     */
+    public function done($workerId, $taskId, $result)
+    {
+        $this->storage->deleteTask($taskId);
+
+        $worker = $this->storage->getWorker($workerId);
+        $worker->setStatus('free');
+        $this->storage->saveWorker($worker);
+
+        return 'ok';
+    }
+
+    /**
      * Add new task to queue
      * @param  string $name
      * @param  mixed $parameters
@@ -112,7 +133,9 @@ class Manager
     public function sendTaskToWorker(Task $task, Worker $worker)
     {
         $client = $this->newRpcClient($worker->getHost(), $worker->getport());
-        $success = $client->notify($task->getName(), [$task->getParameters()]);
+        $parameters = [$worker->getId(), $task->getId(), $task->getParameters()];
+        
+        $success = $client->notify('run', $parameters);
 
         if ($success) {
             $task->setStatus('in_progress');
@@ -134,7 +157,7 @@ class Manager
      */
     public function newRpcClient($host, $port)
     {
-        return new JsonRpc\Client("http://$host:$port/listen.php");
+        return new \JsonRpc\Client("http://$host:$port/listen.php");
     }
 
 }

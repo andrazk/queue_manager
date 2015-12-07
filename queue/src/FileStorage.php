@@ -4,7 +4,7 @@ namespace Queue;
 
 class FileStorage implements StorageInterface
 {
-    protected $file = 'storage_file';
+    protected $file = '/usr/src/storage_file';
 
     /**
      * File Getter
@@ -38,6 +38,22 @@ class FileStorage implements StorageInterface
         }
 
         return unserialize(file_get_contents($file));
+    }
+
+    /**
+     * Get single worker by id
+     * @param  int $workerId
+     * @return Worker|null
+     * @author Andraz <andraz.krascek@gmail.com>
+     */
+    public function getWorker($workerId)
+    {
+        $workers = $this->getWorkers();
+        if (isset($workers[$workerId])) {
+            return $workers[$workerId];
+        }
+
+        return null;
     }
 
     /**
@@ -78,6 +94,10 @@ class FileStorage implements StorageInterface
      */
     public function getKeyFromData($data, $key)
     {
+        if (!is_array($data)) {
+            return [];
+        }
+
         if (!key_exists($key, $data)) {
             return [];
         }
@@ -118,6 +138,7 @@ class FileStorage implements StorageInterface
      */
     public function write($file, $data)
     {
+        file_put_contents('log', 'File: ' . $file . PHP_EOL, FILE_APPEND);
         return file_put_contents($file, serialize($data));
     }
 
@@ -130,6 +151,30 @@ class FileStorage implements StorageInterface
     {
         $data = $this->open($this->getFile());
         return $this->getKeyFromData($data, 'tasks');
+    }
+
+    /**
+     * Delete task from storage
+     * @param  int $taskId
+     * @return boolean
+     * @author Andraz <andraz.krascek@gmail.com>
+     */
+    public function deleteTask($taskId)
+    {
+        $data = $this->open($this->getFile());
+        $tasks = $this->getKeyFromData($data, 'tasks');
+
+        if (!isset($tasks[$taskId])) {
+            return false;
+        }
+
+        unset($tasks[$taskId]);
+
+        $data['tasks'] = $tasks;
+
+        $this->write($this->getFile(), $data);
+
+        return true;
     }
 
     /**

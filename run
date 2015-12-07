@@ -1,4 +1,13 @@
 #! /bin/bash
 
-docker run -t -d -p 8000:8000 -v $(pwd)/queue/:/usr/src --name queue_container queue php -S 0.0.0.0:8000
+docker run -t -d -p 8000:8000 -v $(pwd)/queue/:/usr/src --name queue_container queue /bin/bash -c "php -S 0.0.0.0:8000 > log & php loop.php > log & tail -f result.log"
+
+docker run -t -d -v $(pwd)/client/:/usr/src --link queue_container:queue client php send.php
+
+./add_worker encoder 4000
+./add_worker fibonacci 4001
+./add_worker mirror 4002
+./add_worker arithmetic 4003
+
+tail -f queue/result.log
 

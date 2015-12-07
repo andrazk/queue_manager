@@ -4,10 +4,10 @@ function help () {
     echo "Usage:"
     echo "add_worker type port";
 }
-#/bin/bash -c "php start.php && php -S 0.0.0.0:$2"
+
 if [ $2 ]
 then
-    docker run -t -i -p $2:$2 -e WORKER_PORT=$2 -e WORKER_TYPE=$1 -v $(pwd)/worker/:/usr/src --link queue_container:queue worker /bin/bash
+    docker run -t -d -p $2:$2 -e WORKER_PORT=$2 -e WORKER_TYPE=$1 -v $(pwd)/worker/:/usr/src --link queue_container:queue worker /bin/bash -c "php start.php && php -S 0.0.0.0:$2"
 else
     help
 fi

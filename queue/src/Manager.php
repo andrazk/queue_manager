@@ -64,7 +64,9 @@ class Manager
     {
         file_put_contents('result.log', "Worker $workerId finished task $taskId with result $result" . PHP_EOL, FILE_APPEND);
 
-        $this->storage->deleteTask($taskId);
+        $task = $this->storage->getTask($taskId);
+        $task->setStatus('done');
+        $this->storage->saveTask($task);
 
         $worker = $this->storage->getWorker($workerId);
         $worker->setStatus('free');

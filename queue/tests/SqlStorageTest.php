@@ -22,16 +22,18 @@ class SqlStorageTest extends \PHPUnit_Framework_TestCase
      */
     public function testGetWorkers()
     {
-        $data = ['workers' => [new Worker()]];
-        $storage = \Mockery::mock('Queue\SqlStorage[getFile,open]');
-        $storage->shouldReceive('getFile')->once()->andReturn($this->fileInTest);
-        $storage->shouldReceive('open')->with($this->fileInTest)->once()->andReturn($data);
+        $this->storage->saveWorker(new Worker());
 
-        $workers = $storage->getWorkers();
+        $workers = $this->storage->getWorkers();
 
         $this->assertInstanceOf('Queue\Worker', $workers[0]);
     }
 
+    /**
+     * Test get worker by host
+     * @return void
+     * @author Andraz <andraz.krascek@gmail.com>
+     */
     public function testGetWorkerByHost()
     {
         $host = "127.0.0.1";
@@ -43,17 +45,22 @@ class SqlStorageTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($worker, $this->storage->getWorkerByHost($host));
     }
 
+    /**
+     * Test whne worker is not found by host
+     * @return void
+     * @author Andraz <andraz.krascek@gmail.com>
+     */
     public function testGetWorkerByHostNotFound()
     {
         $host = "127.0.0.1";
         $hostPublic = "198.1.45.32";
 
-        $worker = \Mockery::mock('Queue\Worker');
-        $worker->shouldReceive('getHost')->once()->andReturn($host);
-        $storage = \Mockery::mock('Queue\SqlStorage[getWorkers]');
-        $storage->shouldReceive('getWorkers')->once()->andReturn([$worker]);
+        $worker = new Worker();
+        $worker->setHost($host);
+        $this->storage->saveWorker($worker);
+        
 
-        $this->assertNull($storage->getWorkerByHost($hostPublic));
+        $this->assertNull($this->storage->getWorkerByHost($hostPublic));
     }
 
     /**

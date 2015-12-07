@@ -275,8 +275,6 @@ class ManagerTest extends \PHPUnit_Framework_TestCase
         $workers = $this->storage->getWorkers()[0];
         $tasks = $this->storage->getTasks()[0];
 
-        var_dump($workers);
-
         $this->assertEquals('ok', $result);
 
     }

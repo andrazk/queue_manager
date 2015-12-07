@@ -120,6 +120,28 @@ class SqlStorage implements StorageInterface
     }
 
     /**
+     * Get task by id
+     * @param int $id
+     * @return Task null
+     */
+    public function getTask($id)
+    {
+        $result = $this->db->query("SELECT * FROM tasks WHERE id = $id LIMIT 1");
+
+        foreach ($result as $key => $row) {
+            $task = new Task();
+            $task->setId($row['id']);
+            $task->setName($row['name']);
+            $task->setParameters($row['parameters']);
+            $task->setStatus($row['status']);
+
+            return $task;
+        }
+
+        return null;
+    }   
+
+    /**
      * Get all tasks from DB
      * @return array
      */

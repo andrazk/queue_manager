@@ -3,7 +3,8 @@
 require __DIR__ . '/src/autoload.php';
 
 unlink('queue.sqlite');
-unlink('result.log');
+
+file_put_contents('result.log', '--start--' . PHP_EOL);
 
 $storage = new \Queue\SqlStorage();
 
@@ -13,16 +14,9 @@ $manager = new \Queue\Manager($storage, $task);
 
 while (true) {
 
-    echo 'Number of tasks: ' .count($storage->getTasks()) . PHP_EOL;
-    echo 'Number of worke: ' . count($storage->getWorkers()) . PHP_EOL;
-
     list($task, $worker) = $manager->getWaitingTaskAndFreeWorker();
 
     if ($task) {
         $manager->sendTaskToWorker($task, $worker);
     }
-
-    echo '---' . PHP_EOL;
-
-    sleep(1);
 }

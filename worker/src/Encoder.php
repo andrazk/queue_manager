@@ -2,16 +2,22 @@
 
 namespace Worker;
 
-class Encoder
+class Encoder extends Worker
 {
     /**
      * Encode input with PASSWORD_BCRYPT algorithm
+     * @param  string $workerId
+     * @param  string $taskId
      * @param  string $input
      * @return string
      * @author Andraz <andraz.krascek@gmail.com>
      */
-    public function run($input)
+    public function run($workerId, $taskId, $input)
     {
-        return password_hash($input, PASSWORD_BCRYPT);
+        $pass = password_hash($input, PASSWORD_BCRYPT);
+
+        $this->sendResult($workerId, $taskId, $pass);
+
+        return $pass;
     }
 }

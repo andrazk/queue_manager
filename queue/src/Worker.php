@@ -100,6 +100,12 @@ class Worker
         $this->status = $status;
     }
 
+    public function getStatus()
+    {
+        return $this->status;
+    }
+
+
     /**
      * Check if worker is free
      * @return boolean

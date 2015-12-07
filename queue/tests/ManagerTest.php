@@ -2,13 +2,22 @@
 
 namespace Queue\Tests;
 
-use Queue\FileStorage;
+use Queue\SqlStorage;
 use Queue\Worker;
 use Queue\Manager;
 use Queue\Task;
 
 class ManagerTest extends \PHPUnit_Framework_TestCase
 {
+    public function setUp()
+    {
+        parent::setUp();
+
+        $this->storage = new SqlStorage('test.sqlite');
+
+        $this->manager = new Manager($this->storage, new Task());
+    }
+
     /**
      * Test if new worker is saved
      * @return void
@@ -21,7 +30,7 @@ class ManagerTest extends \PHPUnit_Framework_TestCase
         $worker = new Worker();
         $worker->setId(2);
 
-        $storage = \Mockery::mock('Queue\FileStorage');
+        $storage = \Mockery::mock('Queue\SqlStorage');
         $storage->shouldReceive('getWorkerByHost')->once()->with($host)->andReturn(null);
         $storage->shouldReceive('saveWorker')->once()->with(\Mockery::type('Queue\Worker'))->andReturn($worker);
 
@@ -44,7 +53,7 @@ class ManagerTest extends \PHPUnit_Framework_TestCase
         $worker = new Worker();
         $worker->setId(2);
 
-        $storage = \Mockery::mock('Queue\FileStorage');
+        $storage = \Mockery::mock('Queue\SqlStorage');
         $storage->shouldReceive('getWorkerByHost')->once()->with($host)->andReturn($worker);
         $storage->shouldReceive('saveWorker')->never();
 
@@ -67,7 +76,7 @@ class ManagerTest extends \PHPUnit_Framework_TestCase
         $task->shouldReceive('setName')->with('fibonacci')->once();
         $task->shouldReceive('setParameters')->with(5)->once();
 
-        $storage = \Mockery::mock('Queue\FileStorage');
+        $storage = \Mockery::mock('Queue\SqlStorage');
         $storage->shouldReceive('saveTask')->with($task)->once()->andReturn($task);
 
         $manager = new Manager($storage, $task);
@@ -90,7 +99,7 @@ class ManagerTest extends \PHPUnit_Framework_TestCase
         $task->shouldReceive('isWaiting')->once()->andReturn(true);
         $task->shouldReceive('getName')->once()->andReturn('fibonacci');
 
-        $storage = \Mockery::mock('Queue\FileStorage');
+        $storage = \Mockery::mock('Queue\SqlStorage');
         $storage->shouldReceive('getTasks')->once()->andReturn([$task]);
         $storage->shouldReceive('getWorkers')->once()->andReturn([$worker]);
 
@@ -112,7 +121,7 @@ class ManagerTest extends \PHPUnit_Framework_TestCase
         $task = \Mockery::mock('Queue\Task');
         $task->shouldReceive('isWaiting')->once()->andReturn(false);
 
-        $storage = \Mockery::mock('Queue\FileStorage');
+        $storage = \Mockery::mock('Queue\SqlStorage');
         $storage->shouldReceive('getTasks')->once()->andReturn([$task]);
 
         $manager = new Manager($storage, $task);
@@ -137,7 +146,7 @@ class ManagerTest extends \PHPUnit_Framework_TestCase
         $task->shouldReceive('isWaiting')->once()->andReturn(true);
         $task->shouldReceive('getName')->once()->andReturn('fibonacci');
 
-        $storage = \Mockery::mock('Queue\FileStorage');
+        $storage = \Mockery::mock('Queue\SqlStorage');
         $storage->shouldReceive('getTasks')->once()->andReturn([$task]);
         $storage->shouldReceive('getWorkers')->once()->andReturn([$worker]);
 
@@ -164,7 +173,7 @@ class ManagerTest extends \PHPUnit_Framework_TestCase
         $task->shouldReceive('isWaiting')->once()->andReturn(true);
         $task->shouldReceive('getName')->once()->andReturn('fibonacci');
 
-        $storage = \Mockery::mock('Queue\FileStorage');
+        $storage = \Mockery::mock('Queue\SqlStorage');
         $storage->shouldReceive('getTasks')->once()->andReturn([$task]);
         $storage->shouldReceive('getWorkers')->once()->andReturn([$worker]);
 
@@ -187,11 +196,13 @@ class ManagerTest extends \PHPUnit_Framework_TestCase
         $port = 4000;
 
         $task = \Mockery::mock('Queue\Task');
+        $task->shouldReceive('getId')->once()->andReturn(12);
         $task->shouldReceive('getName')->once()->andReturn('fibonacci');
         $task->shouldReceive('getParameters')->once()->andReturn(5);
         $task->shouldReceive('setStatus')->with('in_progress')->once();
 
         $worker = \Mockery::mock('Queue\Worker');
+        $worker->shouldReceive('getId')->once()->andReturn(1);
         $worker->shouldReceive('getHost')->once()->andReturn($host);
         $worker->shouldReceive('getPort')->once()->andReturn($port);
         $worker->shouldReceive('setStatus')->once()->with('busy');
@@ -199,7 +210,7 @@ class ManagerTest extends \PHPUnit_Framework_TestCase
         $client = \Mockery::mock('JsonRpc\Client');
         $client->shouldReceive('notify')->once()->andReturn(true);
 
-        $storage = \Mockery::mock('Queue\FileStorage');
+        $storage = \Mockery::mock('Queue\SqlStorage');
         $storage->shouldReceive('saveTask')->with($task)->once();
         $storage->shouldReceive('saveWorker')->with($worker)->once();
 
@@ -220,11 +231,13 @@ class ManagerTest extends \PHPUnit_Framework_TestCase
         $port = 4000;
 
         $task = \Mockery::mock('Queue\Task');
+        $task->shouldReceive('getId')->once()->andReturn(12);
         $task->shouldReceive('getName')->once()->andReturn('fibonacci');
         $task->shouldReceive('getParameters')->once()->andReturn(5);
         $task->shouldReceive('setStatus')->with('in_progress')->once();
 
         $worker = \Mockery::mock('Queue\Worker');
+        $worker->shouldReceive('getId')->once()->andReturn(1);
         $worker->shouldReceive('getHost')->once()->andReturn($host);
         $worker->shouldReceive('getPort')->once()->andReturn($port);
         $worker->shouldReceive('setStatus')->once()->with('busy');
@@ -232,7 +245,7 @@ class ManagerTest extends \PHPUnit_Framework_TestCase
         $client = \Mockery::mock('JsonRpc\Client');
         $client->shouldReceive('notify')->once()->andReturn(false);
 
-        $storage = \Mockery::mock('Queue\FileStorage');
+        $storage = \Mockery::mock('Queue\SqlStorage');
         $storage->shouldReceive('saveTask')->never();
         $storage->shouldReceive('saveWorker')->never();
 
@@ -240,5 +253,31 @@ class ManagerTest extends \PHPUnit_Framework_TestCase
         $manager->shouldReceive('newRpcClient')->with($host, $port)->once()->andReturn($client);
 
         $this->assertFalse($manager->sendTaskToWorker($task, $worker));
+    }
+
+    /**
+     * Test done
+     * @return void
+     * @author Andraz <andraz.krascek@gmail.com>
+     */
+    public function testDone()
+    {
+        $worker = new Worker();
+
+        $this->storage->saveWorker($worker);
+
+        $task = new Task();
+
+        $this->storage->saveTask($task);
+
+        $result = $this->manager->done($worker->getId(), $task->getId(), 'done');
+
+        $workers = $this->storage->getWorkers()[0];
+        $tasks = $this->storage->getTasks()[0];
+
+        var_dump($workers);
+
+        $this->assertEquals('ok', $result);
+
     }
 }

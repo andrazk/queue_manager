@@ -2,34 +2,17 @@
 
 namespace Queue\Tests;
 
-use Queue\FileStorage;
+use Queue\SqlStorage;
 use Queue\Worker;
 use Queue\Task;
 
-class FileStorageTest extends \PHPUnit_Framework_TestCase
+class SqlStorageTest extends \PHPUnit_Framework_TestCase
 {
-    protected $fileInTest = './tests/file_in_test';
-
     public function setUp()
     {
         parent::setUp();
 
-        $this->storage = new FileStorage();
-        $this->storage->setFile($this->fileInTest);
-    }
-
-    /**
-     * Test opening not existing file
-     * @author Andraz <andraz.krascek@gmail.com>
-     */
-    public function testOpen()
-    {
-        $data = ['key' => new \stdClass()];
-        file_put_contents($this->fileInTest, serialize($data));
-
-        $actual = $this->storage->open($this->fileInTest);
-
-        $this->assertEquals($data, $actual);
+        $this->storage = new SqlStorage('test.sqlite');
     }
 
     /**
@@ -40,8 +23,7 @@ class FileStorageTest extends \PHPUnit_Framework_TestCase
     public function testGetWorkers()
     {
         $data = ['workers' => [new Worker()]];
-
-        $storage = \Mockery::mock('Queue\FileStorage[getFile,open]');
+        $storage = \Mockery::mock('Queue\SqlStorage[getFile,open]');
         $storage->shouldReceive('getFile')->once()->andReturn($this->fileInTest);
         $storage->shouldReceive('open')->with($this->fileInTest)->once()->andReturn($data);
 
@@ -52,42 +34,26 @@ class FileStorageTest extends \PHPUnit_Framework_TestCase
 
     public function testGetWorkerByHost()
     {
-        $host = '127.0.0.1';
+        $host = "127.0.0.1";
 
-        $worker = \Mockery::mock('Queue\Worker');
-        $worker->shouldReceive('getHost')->once()->andReturn($host);
+        $worker = new Worker();
+        $worker->setHost($host);
+        $this->storage->saveWorker($worker);
 
-        $storage = \Mockery::mock('Queue\FileStorage[getWorkers]');
-        $storage->shouldReceive('getWorkers')->once()->andReturn([$worker]);
-
-        $this->assertEquals($worker, $storage->getWorkerByHost($host));
+        $this->assertEquals($worker, $this->storage->getWorkerByHost($host));
     }
 
     public function testGetWorkerByHostNotFound()
     {
-        $host = '127.0.0.1';
-        $hostPublic = '198.1.45.32';
+        $host = "127.0.0.1";
+        $hostPublic = "198.1.45.32";
 
         $worker = \Mockery::mock('Queue\Worker');
         $worker->shouldReceive('getHost')->once()->andReturn($host);
-
-        $storage = \Mockery::mock('Queue\FileStorage[getWorkers]');
+        $storage = \Mockery::mock('Queue\SqlStorage[getWorkers]');
         $storage->shouldReceive('getWorkers')->once()->andReturn([$worker]);
 
         $this->assertNull($storage->getWorkerByHost($hostPublic));
-    }
-
-    /**
-     * Test if function return array from file
-     * @return void
-     * @author Andraz <andraz.krascek@gmail.com>
-     */
-    public function testSetGetFile()
-    {
-        $this->storage->setFile($this->fileInTest);
-        $actual = $this->storage->getFile($this->fileInTest);
-
-        $this->assertEquals($this->fileInTest, $actual);
     }
 
     /**
@@ -100,7 +66,7 @@ class FileStorageTest extends \PHPUnit_Framework_TestCase
         $worker = new Worker();
         $actual = $this->storage->saveWorker($worker);
 
-        $this->assertEquals(0, $actual->getId());
+        $this->assertEquals(1, $actual->getId());
     }
 
     /**
@@ -113,8 +79,8 @@ class FileStorageTest extends \PHPUnit_Framework_TestCase
         $first = $this->storage->saveWorker(new Worker());
         $second = $this->storage->saveWorker(new Worker());
 
-        $this->assertEquals(0, $first->getId());
-        $this->assertEquals(1, $second->getId());
+        $this->assertEquals(1, $first->getId());
+        $this->assertEquals(2, $second->getId());
     }
 
     /**
@@ -148,7 +114,7 @@ class FileStorageTest extends \PHPUnit_Framework_TestCase
         $task = new Task();
         $actual = $this->storage->saveTask($task);
 
-        $this->assertEquals(0, $actual->getId());
+        $this->assertEquals(1, $actual->getId());
     }
 
     /**
@@ -161,8 +127,8 @@ class FileStorageTest extends \PHPUnit_Framework_TestCase
         $first = $this->storage->saveTask(new Task());
         $second = $this->storage->saveTask(new Task());
 
-        $this->assertEquals(0, $first->getId());
-        $this->assertEquals(1, $second->getId());
+        $this->assertEquals(1, $first->getId());
+        $this->assertEquals(2, $second->getId());
     }
 
     /**
@@ -176,10 +142,8 @@ class FileStorageTest extends \PHPUnit_Framework_TestCase
         $task->setStatus('in_progress');
         $task = $this->storage->saveTask($task);
 
-        $taskUpdated = new Task();
-        $taskUpdated->setId($task->getId());
-        $taskUpdated->setStatus('done');
-        $this->storage->saveTask($taskUpdated);
+        $task->setStatus('done');
+        $this->storage->saveTask($task);
 
         $actual = $this->storage->getTasks()[0];
 
@@ -195,8 +159,8 @@ class FileStorageTest extends \PHPUnit_Framework_TestCase
     {
         parent::tearDown();
 
-        if (file_exists($this->fileInTest)) {
-            unlink($this->fileInTest);
+        if (file_exists('test.sqlite')) {
+            unlink('test.sqlite');
         }
     }
 }

@@ -2,7 +2,7 @@
 
 require __DIR__ . '/src/autoload.php';
 
-$storage = new \Queue\FileStorage();
+$storage = new \Queue\SqlStorage();
 $task = new \Queue\Task();
 
 $manager = new \Queue\Manager($storage, $task);

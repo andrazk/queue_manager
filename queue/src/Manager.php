@@ -62,6 +62,8 @@ class Manager
      */
     public function done($workerId, $taskId, $result)
     {
+        file_put_contents('result.log', "Worker $workerId finished task $taskId with result $result" . PHP_EOL, FILE_APPEND);
+
         $this->storage->deleteTask($taskId);
 
         $worker = $this->storage->getWorker($workerId);

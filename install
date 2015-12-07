@@ -2,3 +2,12 @@
 
 docker build -t queue ./queue
 docker build -t worker ./worker
+docker build -t client ./client
+
+docker pull composer/composer
+
+docker run -v "$(pwd)/queue":/app composer/composer install
+docker run -v "$(pwd)/worker":/app composer/composer install
+docker run -v "$(pwd)/client":/app composer/composer install
+
+./stop

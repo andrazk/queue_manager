@@ -102,7 +102,6 @@ class SqlStorage implements StorageInterface
 
     		$worker->setId($this->db->lastInsertId());
     	} else {
-            file_put_contents('storage.log', print_r($worker, true), FILE_APPEND);
             $query = $this->db->prepare("UPDATE workers SET host = ?, port = ?, type = ?, status = ? WHERE id = ?");
             $query->execute([$worker->getHost(), $worker->getPort(), $worker->getType(), $worker->getStatus(), $worker->getId()]);
     	}

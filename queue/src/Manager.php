@@ -136,15 +136,17 @@ class Manager
     {
         $client = $this->newRpcClient($worker->getHost(), $worker->getport());
         $parameters = [$worker->getId(), $task->getId(), $task->getParameters()];
+
+        $task->setStatus('in_progress');
+        $this->storage->saveTask($task);
+
+        $worker->setStatus('busy');
+        $this->storage->saveWorker($worker);
         
         $success = $client->notify('run', $parameters);
 
         if ($success) {
-            $task->setStatus('in_progress');
-            $this->storage->saveTask($task);
-
-            $worker->setStatus('busy');
-            $this->storage->saveWorker($worker);
+            
         }
 
         return $success;

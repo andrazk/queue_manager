@@ -5,6 +5,7 @@ docker build -t worker ./worker
 docker build -t client ./client
 
 docker pull composer/composer
+docker pull phpunit/phpunit
 
 docker run -v "$(pwd)/queue":/app composer/composer install
 docker run -v "$(pwd)/worker":/app composer/composer install

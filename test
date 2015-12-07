@@ -1,0 +1,4 @@
+#! /bin/bash
+
+docker run -v "$(pwd)/queue":/app phpunit/phpunit  ./tests
+docker run -v "$(pwd)/worker":/app phpunit/phpunit ./tests

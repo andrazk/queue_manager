@@ -2,24 +2,27 @@
 
 namespace Worker;
 
-class Arithmetic
+class Arithmetic extends Worker
 {
     protected $parser;
-
-    public function __construct($parser)
-    {
-        $this->parser = $parser;
-    }
 
     /**
      * Simple arithmetic solver
      * Using shunting-yard algorithm
+     * @param  string $workerId
+     * @param  string $taskId
      * @param  string $input
-     * @return int
+     * @return string
      * @author Andraz <andraz.krascek@gmail.com>
      */
-    public function run($input)
+    public function run($workerId, $taskId, $input)
     {
-        return $this->parser->parse($input);
+        file_put_contents('result.log', $input, FILE_APPEND);
+        $result = \RR\Shunt\Parser::parse($input);
+        file_put_contents('result.log', $result, FILE_APPEND);
+
+        $this->sendResult($workerId, $taskId, $result);
+
+        return $result;
     }
 }

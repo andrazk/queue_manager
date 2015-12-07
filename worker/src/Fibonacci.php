@@ -2,23 +2,29 @@
 
 namespace Worker;
 
-class Fibonacci
+class Fibonacci extends Worker
 {
     protected $cache = [];
 
     /**
      * Return Fibonacci sequence
-     * @param  int $num
-     * @return array
+     * @param  string $workerId
+     * @param  string $taskId
+     * @param  string $input
+     * @return string
      * @author Andraz <andraz.krascek@gmail.com>
      */
-    public function run($num)
+    public function run($workerId, $taskId, $num)
     {
         $out = [];
 
         for ($ii = 0; $ii < $num; $ii++) {
             $out[] = $this->fib($ii);
         }
+
+        $out = implode(', ', $out);
+
+        $this->sendResult($workerId, $taskId, $out);
 
         return $out;
     }
